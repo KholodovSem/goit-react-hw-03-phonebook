@@ -16,21 +16,54 @@ class ContactsBook extends Component {
     filter: '',
   };
 
-  handleChange = (e) => {
-    const { name, value } = e.currentTarget;
-
+  componentDidMount() {
+    if(this.handleLoadOnLocalStorage("savedContacts") === undefined){
+      return;
+    }
     this.setState({
-      [name]: value,
-    });
-  };
+    contacts: this.handleLoadOnLocalStorage("savedContacts")
+    })
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if(prevState.contacts !== this.state.contacts) {
+      this.handleSaveOnLocalStorage("savedContacts", this.state.contacts)
+    }
+  }
+
+  handleSaveOnLocalStorage = (key, value) => {
+    try {
+      const serializedState = JSON.stringify(value);
+      localStorage.setItem(key, serializedState);
+    } catch (error) {
+      console.error("Set state error: ", error.message);
+    }
+  }
+
+    handleLoadOnLocalStorage = (key) => {
+      try {
+        const serializedState = localStorage.getItem(key);
+        return serializedState === null ? undefined : JSON.parse(serializedState);
+      } catch (error) {
+        console.error("Get state error: ", error.message);
+      }
+    }
+
+    handleChange = (e) => {
+      const { name, value } = e.currentTarget;
+
+      this.setState({
+        [name]: value,
+      });
+    };
 
 
-  filterContacts = () => {
-    const { contacts, filter } = this.state;
-    const normalizeFilter = filter.toLowerCase();
+    filterContacts = () => {
+      const { contacts, filter } = this.state;
+      const normalizeFilter = filter.toLowerCase();
 
-    return contacts.filter((contact) => contact.name.toLowerCase().includes(normalizeFilter));
-  };
+      return contacts.filter((contact) => contact.name.toLowerCase().includes(normalizeFilter));
+    };
 
   handlePush = (contact) => {
     this.setState(({ contacts }) => {
